@@ -71,8 +71,8 @@ void PrintMenu() {
     std::cout << "* 0. QUIT                        *" << std::endl;
     std::cout << "* 1. *" << std::endl;
     std::cout << "* 2. *" << std::endl;
-    //std::cout << "* 3. Build a min-max heap        *" << std::endl;
-    //std::cout << "* 4: Top-K max from min-max heap *" << std::endl;
+    //std::cout << "* 3.*" << std::endl;
+    //std::cout << "* 4*" << std::endl;
     std::cout << "**********************************" << std::endl;
     std::cout << "Input a choice(0, 1, 2): " << std::endl;
     return;
