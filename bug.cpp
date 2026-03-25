@@ -157,18 +157,18 @@ class AVL_Tree {
         cur -> left = to_return -> right;
         if (to_return -> right) to_return -> right -> parent = cur;
         to_return -> parent = cur -> parent;
-        to_return -> right = cur;
-        cur -> parent = to_return;
-
+        
         if (to_return->parent == nullptr) {
             root = to_return;
         }
         else if (to_return->parent->left == cur) {
-            to_return->parent->left = to_return;
+            cur->parent->left = to_return;
         }
         else {
-            to_return->parent->right = to_return;
+            cur->parent->right = to_return;
         }
+        to_return -> right = cur;
+        cur -> parent = to_return;
         return to_return;
     }
 
@@ -177,18 +177,18 @@ class AVL_Tree {
         cur -> right = to_return -> left;
         if (to_return -> left) to_return -> left -> parent = cur;
         to_return -> parent = cur -> parent;
-        to_return -> left = cur;
-        cur -> parent = to_return;
         
         if (to_return->parent == nullptr) {
             root = to_return;
         }
         else if (to_return->parent->left == cur) {
-            to_return->parent->left = to_return;
+            cur->parent->left = to_return;
         }
         else {
-            to_return->parent->right = to_return;
+            cur->parent->right = to_return;
         }
+        to_return -> left = cur;
+        cur -> parent = to_return;
         return to_return;
     }
 
