@@ -36,169 +36,26 @@ struct Node {
         }
     }
 
-    bool isFull() {
-        if (data.size() == 3) {
-            return true;
-        }
-        return false;
-    }
-
-    void InsertKey(Data d) {
-        int index = 0;
-        while (index < data.size() && data[index].graduateCount < d.graduateCount) {
-            index++;
-        }
-        data.insert(data.begin() + index, d);
-    }
-
-    void PushChildren(Node *node) {
-        if (!node) return;
-        int index = 0;
-        while (index < 4 && children[index] != nullptr && children[index]->data[0].graduateCount < node->data[0].graduateCount) {
-            index++;
-        }
-        // 往後移
-        for (int i = 3; i > index; i--) {
-            children[i] = children[i-1];
-        }
-        children[index] = node;
-        node->parent = this;
-    }
+    bool isFull() {return data.size() == 3;}
+    void InsertKey(Data d);
+    void PushChildren(Node *node);
 };
-void PrintData(int number , std::vector<GraduateInfo>& informa);
+
 class TwoThreeTree {
   private:
     Node* root = nullptr;
 
-    void Insert(Data d) {
-        if (root == nullptr) {//沒根建根
-            root = new Node(d);
-            return;
-        }
-
-        Node *leaf = nullptr;
-        Node *temp = root;
-        while (temp != nullptr) {//找葉子
-            if (d.graduateCount == temp->data[0].graduateCount) {
-                temp->data[0].number.push_back(d.number[0]);
-                return;
-            }
-
-            leaf = temp;
-            if (leaf->data.size() == 2) {//3 node
-                if (d.graduateCount == temp->data[1].graduateCount) {
-                    temp->data[1].number.push_back(d.number[0]);
-                    return;
-                }
-                if (d.graduateCount > temp->data[1].graduateCount) {
-                    temp = temp->children[2];
-                    continue;
-                }
-            } 
-
-            if (d.graduateCount < temp->data[0].graduateCount) {
-                temp = temp->children[0];
-            } else {
-                temp = temp->children[1];
-            }
-        }
-
-        leaf->InsertKey(d);
-        if (leaf->isFull()) {//滿了，分裂
-            split(leaf);
-        }
-        return;
-    }
-
-    void split(Node *node) {
-        Node *parent;
-        if (node == root) {
-            root = new Node();
-            parent = root;
-            parent->PushChildren(node);
-        }
-        else parent = node->parent;
-
-        //分裂
-        parent->InsertKey(node->data[1]);
-
-        Node *temp = new Node(node->data[2]);
-        if (node->children[2]) {
-            temp->PushChildren(node->children[2]);
-            node->children[2]->parent = temp;
-        }
-        if (node->children[3]) {
-            temp->PushChildren(node->children[3]);
-            node->children[3]->parent = temp;
-        }
-        parent->PushChildren(temp);
-        temp->parent = parent;
-
-        node->data.pop_back();
-        node->data.pop_back();
-        node->children[2] = nullptr;
-        node->children[3] = nullptr;
-        node->parent = parent;
-
-        if(parent->isFull()) {
-            split(parent);
-        }
-    }
-
-    int CountHeight(Node* node) {
-        if (node == nullptr) return 0;
-
-        int height = CountHeight(node->children[0]);
-        int temp = CountHeight(node->children[1]);
-        if (temp > height) height = temp;
-        temp = CountHeight(node->children[2]);
-        if (temp > height) height = temp;
-
-        return height + 1;
-    }
-
-    int CountNodeNum(Node* node) {
-        if (node == nullptr) return 0;
-
-        int temp = CountNodeNum(node->children[0]);
-        temp += CountNodeNum(node->children[1]);
-        temp += CountNodeNum(node->children[2]);
-
-        return temp + 1;
-    }
+    void Insert(Data d);
+    void split(Node *node);
+    int CountHeight(Node* node);
+    int CountNodeNum(Node* node);
 
   public:
-    void BuildTree(std::vector<GraduateInfo> information) {
-        for (int i = 0 ; i < information.size() ; i++) {
-            Data d;
-            d.number.push_back(information[i].number);
-            d.graduateCount = information[i].graduateCount;
-            Insert(d);
-        }
-    }
-
-    void PrintHeight() {
-        int height = CountHeight(root);
-        std::cout << "Tree height = " << height << std::endl;
-    }
-
-    void PrintNodeNum() {
-        int num = CountNodeNum(root);
-        std::cout << "Number of nodes = " << num << std::endl;
-    }
-
-    void PrintRoot(std::vector<GraduateInfo>& informa) {
-        int num = 0;
-        for (int i = 0 ; i < root->data.size() ; i++) {
-            for (int j = 0 ; j < root->data[i].number.size() ; j++) {
-                num++;
-                std::cout << num << ": ";
-                PrintData(root->data[i].number[j] , informa);
-            }
-        }
-    }
+    void BuildTree(std::vector<GraduateInfo> information);
+    void PrintHeight();
+    void PrintNodeNum();
+    void PrintRoot(std::vector<GraduateInfo>& informa);
 };
-
 
 
 /********************************************/
@@ -210,6 +67,7 @@ void GetN(std::string temp , int &n);
 bool SetInfo(std::vector<GraduateInfo> &informatio);
 std::string GetFileName();
 bool LoadFile(std::string filename , std::vector<GraduateInfo> &information);
+void PrintData(int number , std::vector<GraduateInfo>& informa);
 /*********************************************/
 
 int main() {
@@ -389,3 +247,158 @@ void PrintData(int number , std::vector<GraduateInfo>& informa){
         }
     }
 }
+
+/******************** Node **************************/
+void Node::PushChildren(Node *node) {
+    if (!node) return;
+    int index = 0;
+    while (index < 4 && children[index] != nullptr && children[index]->data[0].graduateCount < node->data[0].graduateCount) {
+        index++;
+    }
+    // 往後移
+    for (int i = 3; i > index; i--) {
+        children[i] = children[i-1];
+    }
+    children[index] = node;
+    node->parent = this;
+}
+
+void Node::InsertKey(Data d) {
+    int index = 0;
+    while (index < data.size() && data[index].graduateCount < d.graduateCount) {
+        index++;
+    }
+    data.insert(data.begin() + index, d);
+}
+
+/******************** TwoThreeTree **************************/
+//private function
+void TwoThreeTree::Insert(Data d) {
+    if (root == nullptr) {//沒根建根
+        root = new Node(d);
+        return;
+    }
+
+    Node *leaf = nullptr;
+    Node *temp = root;
+    while (temp != nullptr) {//找葉子
+        if (d.graduateCount == temp->data[0].graduateCount) {
+            temp->data[0].number.push_back(d.number[0]);
+            return;
+        }
+
+        leaf = temp;
+        if (leaf->data.size() == 2) {//3 node
+            if (d.graduateCount == temp->data[1].graduateCount) {
+                temp->data[1].number.push_back(d.number[0]);
+                return;
+            }
+            if (d.graduateCount > temp->data[1].graduateCount) {
+                temp = temp->children[2];
+                continue;
+            }
+        } 
+
+        if (d.graduateCount < temp->data[0].graduateCount) {
+            temp = temp->children[0];
+        } else {
+            temp = temp->children[1];
+        }
+    }
+
+    leaf->InsertKey(d);
+    if (leaf->isFull()) {//滿了，分裂
+        split(leaf);
+    }
+    return;
+}
+
+void TwoThreeTree::split(Node *node) {
+    Node *parent;
+    if (node == root) {
+        root = new Node();
+        parent = root;
+        parent->PushChildren(node);
+    }
+    else parent = node->parent;
+
+    //分裂
+    parent->InsertKey(node->data[1]);
+
+    Node *temp = new Node(node->data[2]);
+    if (node->children[2]) {
+        temp->PushChildren(node->children[2]);
+        node->children[2]->parent = temp;
+    }
+    if (node->children[3]) {
+        temp->PushChildren(node->children[3]);
+        node->children[3]->parent = temp;
+    }
+    parent->PushChildren(temp);
+    temp->parent = parent;
+
+    node->data.pop_back();
+    node->data.pop_back();
+    node->children[2] = nullptr;
+    node->children[3] = nullptr;
+    node->parent = parent;
+
+    if(parent->isFull()) {
+        split(parent);
+    }
+}
+
+int TwoThreeTree::CountHeight(Node* node) {
+    if (node == nullptr) return 0;
+
+    int height = CountHeight(node->children[0]);
+    int temp = CountHeight(node->children[1]);
+    if (temp > height) height = temp;
+    temp = CountHeight(node->children[2]);
+    if (temp > height) height = temp;
+
+    return height + 1;
+}
+
+int TwoThreeTree::CountNodeNum(Node* node) {
+    if (node == nullptr) return 0;
+
+    int temp = CountNodeNum(node->children[0]);
+    temp += CountNodeNum(node->children[1]);
+    temp += CountNodeNum(node->children[2]);
+
+    return temp + 1;
+}
+
+//public function
+void TwoThreeTree::BuildTree(std::vector<GraduateInfo> information) {
+    for (int i = 0 ; i < information.size() ; i++) {
+        Data d;
+        d.number.push_back(information[i].number);
+        d.graduateCount = information[i].graduateCount;
+        Insert(d);
+    }
+}
+
+void TwoThreeTree::PrintHeight() {
+    int height = CountHeight(root);
+    std::cout << "Tree height = " << height << std::endl;
+}
+
+void TwoThreeTree::PrintNodeNum() {
+    int num = CountNodeNum(root);
+    std::cout << "Number of nodes = " << num << std::endl;
+}
+
+void TwoThreeTree::PrintRoot(std::vector<GraduateInfo>& informa) {
+    int num = 0;
+    for (int i = 0 ; i < root->data.size() ; i++) {
+        for (int j = 0 ; j < root->data[i].number.size() ; j++) {
+            num++;
+            std::cout << num << ": ";
+            PrintData(root->data[i].number[j] , informa);
+        }
+    }
+}
+
+/******************** AVL **************************/
