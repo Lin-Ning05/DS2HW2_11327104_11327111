@@ -30,49 +30,47 @@ struct Node {
         }
     }
     Node(Data d) {
-        data[0] = d;
+        data.push_back(d);
         for (int i = 0; i < 4; i++) {
             children[i] = nullptr;
         }
     }
 
-    void pushData(Data d) {data.push_back(d);}
-
     bool isFull() {
-        if (data.size() == 2) {
+        if (data.size() == 3) {
             return true;
         }
         return false;
     }
 
-    void InsterKey(Data d) {
-        if (isFull()) {
-            if (data[0].graduateCount > d.graduateCount) data.insert(data.begin() , d); //小餘第0格插最前面
-            else if (data[1].graduateCount < d.graduateCount) pushData(d);//大於第1格，插最後面
-            else data.insert(data.begin() + 1 , d);//界在中間放中間
-        } else {
-            if (data[0].graduateCount > d.graduateCount) data.insert(data.begin() , d);
-            else pushData(d);
+    void InsertKey(Data d) {
+        int index = 0;
+        while (index < data.size() && data[index].graduateCount < d.graduateCount) {
+            index++;
         }
+        data.insert(data.begin() + index, d);
     }
+
     void PushChildren(Node *node) {
-        int pos = 0;
-        while (pos < 4 && children[pos] != nullptr && children[pos]->data.back().graduateCount < node->data[0].graduateCount) {
-            pos++;
+        if (!node) return;
+        int index = 0;
+        while (index < 4 && children[index] != nullptr && children[index]->data[0].graduateCount < node->data[0].graduateCount) {
+            index++;
         }
         // 往後移
-        for (int i = 3; i > pos; i--) {
+        for (int i = 3; i > index; i--) {
             children[i] = children[i-1];
         }
-        children[pos] = node;
+        children[index] = node;
+        node->parent = this;
     }
 };
-
+void PrintData(int number , std::vector<GraduateInfo>& informa);
 class TwoThreeTree {
   private:
     Node* root = nullptr;
 
-    void Inster(Data d) {
+    void Insert(Data d) {
         if (root == nullptr) {//沒根建根
             root = new Node(d);
             return;
@@ -87,7 +85,7 @@ class TwoThreeTree {
             }
 
             leaf = temp;
-            if (temp->isFull()) {//3 node
+            if (leaf->data.size() == 2) {//3 node
                 if (d.graduateCount == temp->data[1].graduateCount) {
                     temp->data[1].number.push_back(d.number[0]);
                     return;
@@ -105,12 +103,11 @@ class TwoThreeTree {
             }
         }
 
+        leaf->InsertKey(d);
         if (leaf->isFull()) {//滿了，分裂
-            leaf->InsterKey(d);
             split(leaf);
-        } else { //沒滿，放進去
-            leaf->InsterKey(d);
         }
+        return;
     }
 
     void split(Node *node) {
@@ -123,20 +120,25 @@ class TwoThreeTree {
         else parent = node->parent;
 
         //分裂
-        parent->InsterKey(node->data[1]);
+        parent->InsertKey(node->data[1]);
 
         Node *temp = new Node(node->data[2]);
+        if (node->children[2]) {
+            temp->PushChildren(node->children[2]);
+            node->children[2]->parent = temp;
+        }
+        if (node->children[3]) {
+            temp->PushChildren(node->children[3]);
+            node->children[3]->parent = temp;
+        }
+        parent->PushChildren(temp);
         temp->parent = parent;
-        temp->PushChildren(node->children[2]);
-        temp->PushChildren(node->children[3]);
 
-        node->parent = parent;
         node->data.pop_back();
         node->data.pop_back();
         node->children[2] = nullptr;
         node->children[3] = nullptr;
-
-        parent->PushChildren(temp);
+        node->parent = parent;
 
         if(parent->isFull()) {
             split(parent);
@@ -171,7 +173,7 @@ class TwoThreeTree {
             Data d;
             d.number.push_back(information[i].number);
             d.graduateCount = information[i].graduateCount;
-            Inster(d);
+            Insert(d);
         }
     }
 
@@ -188,7 +190,7 @@ class TwoThreeTree {
     void PrintRoot(std::vector<GraduateInfo>& informa) {
         int num = 0;
         for (int i = 0 ; i < root->data.size() ; i++) {
-            for (int j = 0 ; i < root->data[i].number.size() ; j++) {
+            for (int j = 0 ; j < root->data[i].number.size() ; j++) {
                 num++;
                 std::cout << num << ": ";
                 PrintData(root->data[i].number[j] , informa);
@@ -200,7 +202,6 @@ class TwoThreeTree {
 
 
 /********************************************/
-void PrintData(int number , std::vector<GraduateInfo>& informa);
 void PrintMenu();
 std::string RemoveSpace(std::string target);
 std::string RemoveDotTab(std::string target);
