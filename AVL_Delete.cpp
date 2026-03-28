@@ -51,8 +51,10 @@ class TwoThreeTree {
     void split(Node *node);
     int CountHeight(Node* node);
     int CountNodeNum(Node* node);
+    void DeleteTree(Node* node);
 
   public:
+    
     void BuildTree(std::vector<GraduateInfo> information);
     void PrintHeight();
     void PrintNodeNum();
@@ -86,10 +88,10 @@ class AVL_Tree {
     Node2* RL_Rotate(Node2 *cur);
 
     std::vector<int> DeleteMax();
-
+    void DeleteTree(Node2* node);
   public:
     ~AVL_Tree() {
-        delete root;
+        DeleteTree(root);
         root = nullptr;
     }
 
@@ -447,9 +449,19 @@ int TwoThreeTree::CountNodeNum(Node* node) {
     return temp + 1;
 }
 
+void TwoThreeTree::DeleteTree(Node* node) {
+    if (node == nullptr) return;
+
+    for (int i = 0; i < 4; i++) {
+        DeleteTree(node->children[i]);
+    }
+
+    delete node;
+}
+
 //public function
 void TwoThreeTree::BuildTree(std::vector<GraduateInfo> information) {
-    delete root;
+    DeleteTree(root);
     root = nullptr;
     for (int i = 0 ; i < information.size() ; i++) {
         Data d;
@@ -619,6 +631,15 @@ std::vector<int> AVL_Tree::DeleteMax() {
 
     CheckBalance(falseNode);
     return number;
+}
+
+void AVL_Tree::DeleteTree(Node2* node) {
+    if (node == nullptr) return;
+
+    DeleteTree(node->left);
+    DeleteTree(node->right);
+
+    delete node;
 }
 
 //public function
